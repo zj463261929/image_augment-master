@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<annotation>
+ <folder>VOC2007</folder>
+ <filename>E:\zj\images\non-building\class_data\bricksPile\0121.jpg</filename>
+ <source>
+  <database>The GDS Database</database>
+  <annotation>PASCAL VOC2007</annotation>
+  <image>flickr</image>
+  <flickrid>12345678</flickrid>
+ </source>
+ <owner>
+  <flickrid>12345678</flickrid>
+  <name>GDS</name>
+ </owner>
+ <size>
+  <width>400</width>
+  <height>300</height>
+  <depth>3</depth>
+ </size>
+ <segmented/>
+ <object>
+  <name>bricksPile</name>
+  <pose>Unspecified</pose>
+  <truncated>0</truncated>
+  <difficult>0</difficult>
+  <bndbox>
+   <xmin>5</xmin>
+   <ymin>27</ymin>
+   <xmax>380</xmax>
+   <ymax>277</ymax>
+  </bndbox>
+ </object>
+</annotation>

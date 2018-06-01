@@ -235,12 +235,69 @@ class Function:
 				return img2	
 		
 	def rotate(self, img, angle, scale=1.0, type=0):
-		w = img.shape[1]
-		h = img.shape[0]
-		rangle = -np.deg2rad(angle)	 # angle in radians
-		rot_mat = cv2.getRotationMatrix2D((w/2, h/2), angle, scale)
-		return cv2.warpAffine(img, rot_mat, (w, h))
-
+		def rotate_change(img, angle): #旋转不带放大
+			"""Extract a rectangle from the source image.
+			
+			image - source image
+			center - (x,y) tuple for the centre point.
+			theta - angle of rectangle.
+			width, height - rectangle dimensions.
+			"""
+			height = img.shape[0]  
+			width = img.shape[1] 
+			centerX	 = width/2
+			centerY = height/2
+			#print img.shape
+			
+			angle = np.deg2rad(angle)	
+			#theta *= math.pi / 180 # convert to rad
+			v_x = (math.cos(angle), math.sin(angle))
+			v_y = (-math.sin(angle), math.cos(angle))
+			s_x = centerX - v_x[0] * (width / 2) - v_y[0] * (height / 2)
+			s_y = centerY - v_x[1] * (width / 2) - v_y[1] * (height / 2)
+			mapping = np.array([[v_x[0],v_y[0], s_x], [v_x[1],v_y[1], s_y]])
+			#mapping = np.array([[v_x[0],v_y[0],0], [v_x[1],v_y[1],0]])
+			
+			s_x = v_x[0] * (width / 2) + v_y[0] * (height / 2)
+			s_y = v_x[1] * (width / 2) + v_y[1] * (height / 2)
+			
+			return cv2.warpAffine(img, mapping, (width, height), flags=cv2.WARP_INVERSE_MAP, borderMode=cv2.BORDER_REPLICATE)
+			
+		'''def rotate_nochange(src, angle, scale=1.):#旋转带放大，图像信息没丢失
+			w = src.shape[1]
+			h = src.shape[0]
+			rangle = -np.deg2rad(angle)	 # angle in radians
+			# now calculate new image width and height
+			nw = (abs(np.sin(rangle)*h) + abs(np.cos(rangle)*w))*scale
+			nh = (abs(np.cos(rangle)*h) + abs(np.sin(rangle)*w))*scale
+			# ask OpenCV for the rotation matrix
+			rot_mat = cv2.getRotationMatrix2D((nw*0.5, nh*0.5), angle, scale)
+			# calculate the move from the old center to the new center combined
+			# with the rotation
+			rot_move = np.dot(rot_mat, np.array([(nw-w)*0.5, (nh-h)*0.5,0]))
+			# the move only affects the translation, so update the translation
+			# part of the transform
+			rot_mat[0,2] += rot_move[0]
+			rot_mat[1,2] += rot_move[1]
+			return cv2.warpAffine(src, rot_mat, (int(math.ceil(nw)), int(math.ceil(nh))))
+			
+		img1 = img.copy()
+		if 0==type:
+			return rotate_change(img1, angle)
+		else:
+			return rotate_nochange(img1, angle, scale)'''
+		def rotate_nochange(src, angle, scale=1.):#旋转带放大，图像信息没丢失
+			w = src.shape[1]
+			h = src.shape[0]
+			rangle = -np.deg2rad(angle)	 # angle in radians
+			rot_mat = cv2.getRotationMatrix2D((w/2, h/2), angle, scale)
+			return cv2.warpAffine(src, rot_mat, (w, h))
+			
+		img1 = img.copy()
+		if 0==type:
+			return rotate_change(img1, angle)
+		else:
+			return rotate_nochange(img1, angle, scale)
 	def noise(self, img, param=0.1, type=0):
 		
 		def SaltAndPepper(src, percetage): #定义添加椒盐噪声的函数 
@@ -455,8 +512,98 @@ def get_center(x1,y1,x2,y2,x3,y3,x4,y4):
 	(x,y) = (int((x_min + x_max)) / 2.0, int((y_min + y_max) / 2.0))
 	return x,y
 
+def get_rotate_change(img, result, angle, xmin, ymin, xmax,ymax):
+	rad = np.deg2rad(angle)
+	xmin1 = []
+	ymin1 = []
+	xmax1 = []
+	ymax1 = []
+	width = img.shape[1]
+	height = img.shape[0]
+	centerX = img.shape[1]/2
+	centerY = img.shape[0]/2
+	#print img.shape
+		
+	angle = np.deg2rad(angle)
+	v_x = (math.cos(rad), math.sin(rad))
+	v_y = (-math.sin(rad), math.cos(rad))
+	s_x = centerX - v_x[0] * (width / 2) - v_y[0] * (height / 2)
+	s_y = centerY - v_x[1] * (width / 2) - v_y[1] * (height / 2)
+	#print img.shape
+	#print result.shape
+	result1=result.copy()
+	result2=result.copy()    
+	for i in range(len(xmin)):
+		
+		
+		'''xmin[i] = int (xmin[i] - s_x)
+		xmax[i] = int (xmax[i] - s_x)
+		ymin[i] = int (ymin[i] - s_y)
+		ymax[i] = int (ymax[i] - s_y)'''
+		
+		x1,y1 = rotate_XY(xmin[i],ymin[i],-rad)
+		x2,y2 = rotate_XY(xmax[i],ymin[i],-rad)
+		x3,y3 = rotate_XY(xmax[i],ymax[i],-rad)
+		x4,y4 = rotate_XY(xmin[i],ymax[i],-rad)
+		#centerX1, centerY1 = get_center(x1,y1,x2,y2,x3,y3,x4,y4)
+		#print x1,y1,x3,y3
+		#dx,dy = get_offset(xmin[i],ymin[i],xmax[i]-xmin[i],ymax[i]-ymin[i],rad, centerX1, centerY1)
+						
+		#dx = dx -int (result.shape[1]/2 - img.shape[1]/2)
+		#dy = dy -int (result.shape[0]/2 - img.shape[0]/2)
 
-def get_rotate_change(img, result, angle, xmin, ymin, xmax,ymax,scale):
+		#cv2.rectangle(result1,(x_min,y_min),(x_max,y_max),(0,0,255),1)	
+		#cv2.rectangle(result1,(xmin[i],ymin[i]),(xmax[i],ymax[i]),(255,255,255),1)	
+						
+		'''x1 = int (x1 - dx)
+		x2 = int (x2 - dx)
+		x3 = int (x3 - dx)
+		x4 = int (x4 - dx)
+		y1 = int (y1 - dy)
+		y2 = int (y2 - dy)
+		y3 = int (y3 - dy)
+		y4 = int (y4 - dy)'''  
+		x1 = int (x1 - s_x)
+		x2 = int (x2 - s_x)
+		x3 = int (x3 - s_x)
+		x4 = int (x4 - s_x)
+		y1 = int (y1 - s_y)
+		y2 = int (y2 - s_y)
+		y3 = int (y3 - s_y)
+		y4 = int (y4 - s_y)  
+
+       
+						
+		x_min = int(min(x1,x2,x3,x4))
+		x_max = int(max(x1,x2,x3,x4))
+		y_min = int(min(y1,y2,y3,y4))
+		y_max = int(max(y1,y2,y3,y4))
+			
+		'''xmin1.append ( x_min )
+		ymin1.append ( y_min )
+		xmax1.append ( x_max )
+		ymax1.append ( y_max )'''
+		'''cv2.rectangle (result,(x_min,y_min),(x_max,y_max),(0,255,255),5)
+		cv2.line (result,(x1,y1),(x2,y2),255,2)
+		cv2.line (result,(x2,y2),(x3,y3),255,2)
+		cv2.line (result,(x3,y3),(x4,y4),255,2)
+		cv2.line (result,(x4,y4),(x1,y1),255,2)'''
+		#print x_min,y_min,x_max,y_max
+		x_min = max(x_min,1)
+		y_min = max(y_min,1)
+		x_max = min(x_max, img.shape[1]-2)
+		y_max = min(y_max, img.shape[0]-2)
+		#print x_min,y_min,x_max,y_max
+		xmin1.append( x_min )
+		ymin1.append( y_min )
+		xmax1.append( x_max )
+		ymax1.append( y_max )		
+		cv2.rectangle (result1,(xmin1[i],ymin1[i]),(xmax1[i],ymax1[i]),(255,255,0),1)			
+	cv2.imwrite("test1.jpg", result1)
+	#cv2.imwrite("test2.jpg", result2)
+	return xmin1,ymin1,xmax1,ymax1
+	
+def get_rotate_nochange(img, result, angle, xmin, ymin, xmax,ymax):
 	rad = -np.deg2rad(angle)
 	xmin1 = []
 	ymin1 = []
@@ -464,7 +611,7 @@ def get_rotate_change(img, result, angle, xmin, ymin, xmax,ymax,scale):
 	ymax1 = []
 	w = img.shape[1]
 	h = img.shape[0]
-	rot_mat = cv2.getRotationMatrix2D((w/2, h/2), angle, scale)
+	rot_mat = cv2.getRotationMatrix2D((w/2, h/2), angle, 1.0)
 	print(type(rot_mat))
 
 	result1=result.copy()
@@ -503,7 +650,56 @@ def get_rotate_change(img, result, angle, xmin, ymin, xmax,ymax,scale):
 		cv2.rectangle (result1,(xmin1[i],ymin1[i]),(xmax1[i],ymax1[i]),(0,0,255),2)			
 	cv2.imwrite("test1.jpg", result1)
 	return xmin1,ymin1,xmax1,ymax1
-
+'''def get_rotate_nochange(img, result, angle, xmin, ymin, xmax,ymax):
+	rad = -np.deg2rad(angle)
+	xmin1 = []
+	ymin1 = []
+	xmax1 = []
+	ymax1 = []
+	#print img.shape
+	#print result.shape
+	for i in range(len(xmin)):
+		x1,y1 = rotate_XY(xmin[i],ymin[i],rad)
+		x2,y2 = rotate_XY(xmax[i],ymin[i],rad)
+		x3,y3 = rotate_XY(xmax[i],ymax[i],rad)
+		x4,y4 = rotate_XY(xmin[i],ymax[i],rad)
+		centerX1, centerY1 = get_center(x1,y1,x2,y2,x3,y3,x4,y4)
+		#print x1,y1,x3,y3
+		dx,dy = get_offset(xmin[i],ymin[i],xmax[i]-xmin[i],ymax[i]-ymin[i],rad, centerX1, centerY1)
+						
+		dx = dx -int (result.shape[1]/2 - img.shape[1]/2)
+		dy = dy -int (result.shape[0]/2 - img.shape[0]/2)
+						
+		x1 = int (x1 - dx)
+		x2 = int (x2 - dx)
+		x3 = int (x3 - dx)
+		x4 = int (x4 - dx)
+		y1 = int (y1 - dy)
+		y2 = int (y2 - dy)
+		y3 = int (y3 - dy)
+		y4 = int (y4 - dy)
+						
+		x_min = int(min(x1,x2,x3,x4))
+		x_max = int(max(x1,x2,x3,x4))
+		y_min = int(min(y1,y2,y3,y4))
+		y_max = int(max(y1,y2,y3,y4))
+			
+		xmin1.append ( x_min )
+		ymin1.append ( y_min )
+		xmax1.append ( x_max )
+		ymax1.append ( y_max )
+		#cv2.rectangle (result,(x_min,y_min),(x_max,y_max),(0,255,255),5)
+		#cv2.line (result,(x1,y1),(x2,y2),255,2)
+		#cv2.line (result,(x2,y2),(x3,y3),255,2)
+		#cv2.line (result,(x3,y3),(x4,y4),255,2)
+		#cv2.line (result,(x4,y4),(x1,y1),255,2)
+		xmin1.append( x_min )
+		ymin1.append( y_min )
+		xmax1.append( x_max )
+		ymax1.append( y_max )
+		#cv2.rectangle (result,(xmin1[i],ymin1[i]),(xmax1[i],ymax1[i]),(0,0,255),2)			
+	#cv2.imwrite("test1.jpg", result)
+	return xmin1,ymin1,xmax1,ymax1'''
 def read_xml( path ):
 	#打开xml文档
 	dom = xml.dom.minidom.parse( path ) #用于打开一个xml文件，并将这个文件对象dom变量。

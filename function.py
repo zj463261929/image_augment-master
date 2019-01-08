@@ -1,4 +1,5 @@
 #coding=utf-8
+#coding=utf-8
 import re
 from numpy import *
 import numpy as np
@@ -465,7 +466,7 @@ def get_rotate_change(img, result, angle, xmin, ymin, xmax,ymax,scale):
 	w = img.shape[1]
 	h = img.shape[0]
 	rot_mat = cv2.getRotationMatrix2D((w/2, h/2), angle, scale)
-	print(type(rot_mat))
+	#print(type(rot_mat))
 
 	result1=result.copy()
 	#print img.shape
@@ -559,7 +560,11 @@ def write_xml( path, save_path, xmin,ymin,xmax,ymax, image_width, image_height):
 	nameE.appendChild(nameT) 
 	root.appendChild(nameE) 
 	nameE = dom.createElement( 'filename' ) 
-	nameT = dom.createTextNode( filename[0].firstChild.data ) 
+	filename = save_path.split('/')[-1]
+	basename = filename.split('.')[0]
+	imagename = basename+'.jpg'
+	nameT = dom.createTextNode( imagename )
+	#nameT = dom.createTextNode( filename[0].firstChild.data ) 
 	nameE.appendChild(nameT) 
 	root.appendChild(nameE) 
 

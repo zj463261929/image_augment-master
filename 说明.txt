@@ -1,0 +1,3 @@
+1. test_recognize.py 实现了对一个文件夹内的图片进行增强，每种方法都只在原图上执行一次；
+2. test_recognition_muti_folder.py实现了对多个文件夹内的图片进行增强，每种方法都只在原图上执行一次；
+3. test_recognition_muti_folder_multi_method 实现了对多个文件夹内的图片进行某几种方法叠加的增强，即可以对每张图片叠加使用多种方法进行增强；

@@ -20,15 +20,15 @@ def get_index():
 	return b
 
 
-g1=1 #增强
-g2=1 #对比度
+g1=0 #增强
+g2=0 #对比度
 g3=0 #invertColor
 g4=0 #模糊
 g5=0 #噪音
-g6=1 #旋转
+g6=0 #旋转
 g7=1 #平移
 
-loopNum=5
+loopNum=1
 
 def img_aug(image_dir,xml_dir,image_txt,save_img_dir,save_xml_dir):
 
@@ -72,7 +72,7 @@ def img_aug(image_dir,xml_dir,image_txt,save_img_dir,save_xml_dir):
 				continue
 				
 			num = num + 1
-			print num
+			#print num
 			xmin,ymin,xmax,ymax = read_xml( xml_path )
 			'''img2 = img.copy()
 			for i in range(len(xmin)):
@@ -109,7 +109,7 @@ def img_aug(image_dir,xml_dir,image_txt,save_img_dir,save_xml_dir):
 				if f and (result is not None):
 					img = result.copy()
 
-				if 0 == random.randint(0, 2):
+				if 0:#0 == random.randint(0, 2):
 					result = fun.enhance(img, 0) #type=0(直方图均衡化) type=3(gamma变换)
 				else:
 					result = fun.enhance(img, 3)
@@ -134,16 +134,17 @@ def img_aug(image_dir,xml_dir,image_txt,save_img_dir,save_xml_dir):
 				b=1
 			else:
 				b=0			
-			if g2:# and b: #b: #对比度、亮度
+			if g2 and b: #b: #对比度、亮度
 				mean = getImgMean(img)
-				c= random.randint(0, 2)
-				if c==0:
+				c=random.randint(0, 2)
+				
+				if c==0 and 1:
 					alpha = (1.8-0.0)*(1-mean/255)
 					beta = random.randint(-10, -1)
-				elif c==1:
+				elif c==1 and 0:
 					alpha = (3.0-0.0)*(1-mean/255)
 					beta = random.randint(-20, 20)
-				elif c==2:
+				elif c==2 and 0:
 					alpha = (3.0-0.5)*(1-mean/255)
 					beta = random.randint(-10, 10)
 				
@@ -233,7 +234,8 @@ def img_aug(image_dir,xml_dir,image_txt,save_img_dir,save_xml_dir):
 				if f and (result is not None):
 					img = result.copy()
 					
-				type = random.randint(0, 2)
+				type = 0#random.randint(0, 2)
+				
 				result = fun.noise(img, param=0.03, type=type) #type:（0=高斯,1=椒盐噪声）
 				if result is None:
 					continue
@@ -275,7 +277,7 @@ def img_aug(image_dir,xml_dir,image_txt,save_img_dir,save_xml_dir):
 				if f and (result is not None):
 					img = result.copy()
 					
-				angle = random.randint(-5,5)#random.random()*30 #0~5, 角度
+				angle = random.randint(-2,2)#random.randint(-5,5)#random.random()*30 #0~5, 角度
 				type=1 #改
 				scale = 1.0
 				result = fun.rotate(img, angle, scale=scale, type=type) #type:（0=旋转不带放大,1=旋转带放大）
@@ -323,11 +325,11 @@ def img_aug(image_dir,xml_dir,image_txt,save_img_dir,save_xml_dir):
 				save_path = save_img_dir + img_name1
 				save_path_xml = save_xml_dir + img_name[:len(img_name)-4] + "_translate" + str(loopNum) + ".xml"
 				cv2.imwrite(save_path, result)
-				
+				#print (x_trans,y_trans)
+				xmin1,ymin1,xmax1,ymax1 = get_translate(img, x_trans, y_trans, xmin,ymin, xmax, ymax,type)
 				if 0==type:
-					write_xml( xml_path, save_path_xml, xmin,ymin,xmax,ymax, image_width, image_height)
+					write_xml( xml_path, save_path_xml, xmin1,ymin1,xmax1,ymax1, image_width, image_height)
 				if 1==type:
-					xmin1,ymin1,xmax1,ymax1 = get_translate(img, x_trans, y_trans, xmin,ymin, xmax, ymax)
 					write_xml( xml_path, save_path_xml, xmin1,ymin1,xmax1,ymax1, image_width, image_height)
 				
 			if 0: #变焦/拉伸

@@ -413,26 +413,43 @@ def get_flip(img, flipCode, xmin,ymin, xmax, ymax):
 			#cv2.rectangle (result,(xmin1[i],ymin1[i]),(xmax1[i],ymax1[i]),(0,0,255),1)
 		#cv2.imwrite("test1.jpg", result)
 	return xmin1,ymin1,xmax1,ymax1
-	
-def get_translate(img, x_trans, y_trans, xmin,ymin, xmax, ymax):
+
+def get_translate(img, x_trans, y_trans, xmin,ymin, xmax, ymax, type):
 	xmin1 = []
 	ymin1 = []
 	xmax1 = []
 	ymax1 = []
 	w = img.shape[1]
 	h = img.shape[0]
-	w = w - x_trans
-	h = h - y_trans
-	for i in range(len(xmin)):
-		x1 = w-1 if xmin[i]>=w else xmin[i]  #坐标不可能为负数，所以不考虑这种情况
-		x2 = w-1 if xmax[i]>=w else xmax[i]
-		y1 = h-1 if ymin[i]>=h else ymin[i]
-		y2 = h-1 if ymax[i]>=h else ymax[i]
-		xmin1.append ( x1 )
-		ymin1.append ( y1 )
-		xmax1.append ( x2 )
-		ymax1.append ( y2 )
+	if 0==type:
+		for i in range(len(xmin)):
+			x1 = xmin[i]+x_trans
+			x2 = xmax[i]+x_trans
+			y1 = ymin[i]+y_trans
+			y2 = ymax[i]+y_trans
+			x1 = w-1 if xmin[i]>=w else x1  #坐标不可能为负数，所以不考虑这种情况
+			x2 = w-1 if xmax[i]>=w else x2
+			y1 = h-1 if ymin[i]>=h else y1
+			y2 = h-1 if ymax[i]>=h else y2
+			xmin1.append ( x1 )
+			ymin1.append ( y1 )
+			xmax1.append ( x2 )
+			ymax1.append ( y2 )
+	if 1==type:
+		w = w - x_trans
+		h = h - y_trans
+		for i in range(len(xmin)):
+			x1 = w-1 if xmin[i]>=w else xmin[i]  #坐标不可能为负数，所以不考虑这种情况
+			x2 = w-1 if xmax[i]>=w else xmax[i]
+			y1 = h-1 if ymin[i]>=h else ymin[i]
+			y2 = h-1 if ymax[i]>=h else ymax[i]
+			xmin1.append ( x1 )
+			ymin1.append ( y1 )
+			xmax1.append ( x2 )
+			ymax1.append ( y2 )
 	return xmin1,ymin1,xmax1,ymax1
+	
+
 	
 def rotate_XY(x,y, angle):
 	angle = -angle #
